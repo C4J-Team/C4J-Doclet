@@ -16,30 +16,32 @@ import com.sun.tools.javac.util.Options;
 import com.sun.tools.javadoc.JavadocTool;
 import com.sun.tools.javadoc.ModifierFilter;
 
-public class EasyDoclet {
+public class RootDocFactory {
 
 	private static final String SOURCEPATH_OPT = "-sourcepath";
 
-	final private Logger log = Logger.getLogger(EasyDoclet.class.getName());
+	private static final String DESTINATION_PATH = "-d";
+
+	final private Logger log = Logger.getLogger(RootDocFactory.class.getName());
 
 	final private File[] sourceDirectory;
 	final private String[] packageNames;
 	final private File[] fileNames;
 	final private RootDoc rootDoc;
 
-	public EasyDoclet(File sourceDirectory, String... packageNames) {
-		this(new File[] { sourceDirectory }, packageNames, new File[0]);
+	public RootDocFactory(String destination, File sourceDirectory, String... packageNames) {
+		this(destination, new File[] { sourceDirectory }, packageNames, new File[0]);
 	}
 
-	public EasyDoclet(File[] sourceDirectory, String... packageNames) {
-		this(sourceDirectory, packageNames, new File[0]);
+	public RootDocFactory(String destination, File[] sourceDirectory, String... packageNames) {
+		this(destination, sourceDirectory, packageNames, new File[0]);
 	}
 
-	public EasyDoclet(File[] sourceDirectory, File... fileNames) {
-		this(sourceDirectory, new String[0], fileNames);
+	public RootDocFactory(String destination, File[] sourceDirectory, File... fileNames) {
+		this(destination, sourceDirectory, new String[0], fileNames);
 	}
 
-	protected EasyDoclet(File[] sourceDirectory, String[] packageNames, File[] fileNames) {
+	protected RootDocFactory(String destination, File[] sourceDirectory, String[] packageNames, File[] fileNames) {
 		this.sourceDirectory = sourceDirectory;
 		this.packageNames = packageNames;
 		this.fileNames = fileNames;
@@ -47,6 +49,7 @@ public class EasyDoclet {
 		Context context = new Context();
 		Options compOpts = Options.instance(context);
 		compOpts.put(SOURCEPATH_OPT, concatenateSourcePath());
+		compOpts.put(DESTINATION_PATH, destination);
 
 		new PublicMessager(context, getApplicationName(), new PrintWriter(new LogWriter(Level.SEVERE), true),
 				new PrintWriter(new LogWriter(Level.WARNING), true), new PrintWriter(
@@ -93,9 +96,11 @@ public class EasyDoclet {
 	}
 
 	private ListBuffer<String[]> optionsToList(Options compOpts) {
-		String[] opt = { SOURCEPATH_OPT, compOpts.get(SOURCEPATH_OPT) };
+		String[] opt1 = { SOURCEPATH_OPT, compOpts.get(SOURCEPATH_OPT) };
+		String[] opt2 = {DESTINATION_PATH, compOpts.get(DESTINATION_PATH) };
 		ListBuffer<String[]> options = new ListBuffer<String[]>();
-		options.append(opt);
+		options.append(opt1);
+		options.append(opt2);
 		return options;
 	}
 

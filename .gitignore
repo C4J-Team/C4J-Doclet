@@ -1,4 +1,5 @@
 de.vksi.c4j.doclet.testproject/
+output/
 bin/
 target/
 .settings/

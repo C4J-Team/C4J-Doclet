@@ -6,8 +6,9 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.sun.javadoc.RootDoc;
+import com.sun.tools.javac.util.Paths;
 
-import de.vksi.c4j.doclet.util.EasyDoclet;
+import de.vksi.c4j.doclet.util.RootDocFactory;
 
 
 public class C4JDocletTest {
@@ -22,15 +23,16 @@ public class C4JDocletTest {
 			+ "main" + File.separator + "java"; 
 	private static final String PATH_TO_CONTRACTS = "test" + File.separator + "resources" + File.separator
 			+ "contract" + File.separator + "java";
+	private static final String OUTPUT_DESTINATION = "test" + File.separator + "output";
 	
 	private File[] sourcePath;
 	private RootDoc doc;
-
+	
 	@Before
 	public void setUp() {
 		this.sourcePath = new File[] { new File(PATH_TO_TARGETS), new File(PATH_TO_CONTRACTS) };
-//		EasyDoclet doclet = new EasyDoclet(this.sourcePath, PACKAGE1, PACKAGE2, PACKAGE3, PACKAGE4, PACKAGE5);
-		EasyDoclet doclet = new EasyDoclet(this.sourcePath, PACKAGE1);
+//		EasyDoclet doclet = new EasyDoclet(OUTPUT_DESTINATION, this.sourcePath, PACKAGE1, PACKAGE2, PACKAGE3, PACKAGE4, PACKAGE5);
+		RootDocFactory doclet = new RootDocFactory(OUTPUT_DESTINATION, this.sourcePath, PACKAGE1);
 		doc = doclet.getRootDoc();
 		
 		System.out.println();
