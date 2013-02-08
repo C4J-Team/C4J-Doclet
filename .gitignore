@@ -1,0 +1,9 @@
+de.vksi.c4j.doclet.testproject/
+bin/
+target/
+.settings/
+.metadata/
+.project
+
+# Locally stored "Eclipse launch configurations"
+*.launch
