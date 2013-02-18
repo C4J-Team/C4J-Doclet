@@ -1,39 +1,32 @@
 package de.vksi.c4j.doclet.util;
 
-import static de.vksi.c4j.doclet.util.C4JDocletConstants.ANNOTATION_CONTRACT;
-import static de.vksi.c4j.doclet.util.C4JDocletConstants.ANNOTATION_CONTRACT_REFERENCE;
-
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
-import com.sun.javadoc.AnnotationDesc;
 import com.sun.javadoc.ClassDoc;
 import com.sun.javadoc.RootDoc;
 
 /**
  * @author fmeyerer
- *
+ * 
  */
 public class TargetContractMap {
-	private static final String FILE_EXTENSION = ".class";
-	private static final String VALUE_DELIMITER = "=";
-	private Map<ClassDoc, ClassDoc> map;
+	private Map<ClassDoc, List<ClassDoc>> map;
+	private RootDoc root;
 
 	public TargetContractMap() {
-		map = new HashMap<ClassDoc, ClassDoc>();
+		map = new HashMap<ClassDoc, List<ClassDoc>>();
 	}
 
 	public TargetContractMap(RootDoc root) {
 		this();
-		generateMapping(root);
+		this.root = root;
 	}
 
-	public void put(ClassDoc target, ClassDoc contract) {
-		map.put(target, contract);
-	}
-
-	public ClassDoc getContractFor(ClassDoc target) {
-		return map.get(target);
+	public List<ClassDoc> getContractFor(ClassDoc target) {
+		return map.containsKey(target) ? map.get(target) : new ArrayList<ClassDoc>();
 	}
 
 	public boolean containsTarget(ClassDoc target) {
@@ -41,70 +34,78 @@ public class TargetContractMap {
 	}
 
 	public boolean isContractClass(ClassDoc contract) {
-		return map.containsValue(contract);
+		for (List<ClassDoc> valueList : map.values()) {
+			if (valueList.contains(contract))
+				return true;
+		}
+		return false;
 	}
 
-	//TODO: write unit tests to verify mapping
-	private void generateMapping(RootDoc root) {
+	public void generateMapping() {
 		ClassDoc[] classes = root.classes();
-		
-		//TODO: refactoring -> create classes for c4j annotaion checking
+
 		for (ClassDoc clazz : classes) {
-			AnnotationDesc[] annotations = clazz.annotations();
-			for (AnnotationDesc annotation : annotations) {
-				if (isContractReferenceAnnotation(annotation)) {
-					String annotationValue = getAnnotationValue(annotation);
-					ClassDoc contract = root.classNamed(annotationValue);
-					put(clazz, contract);
-				} else if (isContractAnnotation(annotation)) {
-					if(hasValue(annotation)){
-						String annotationValue = getAnnotationValue(annotation);
-						ClassDoc target = root.classNamed(annotationValue);
-						put(target, clazz);
-						continue;
-					}
-					
-					if(clazz.superclass() != null && !isObject(clazz)){
-						ClassDoc superclass = clazz.superclass();
-						put(superclass, clazz);
-					}
-					
-					//A contract has exactly one target. For that reason
-					//(if more than one interfaces will be implemented)
-					//the first interface is considered as target 
-					if(clazz.interfaces().length > 0){
-						ClassDoc superinterface = clazz.interfaces()[0];
-						put(superinterface, clazz);
-						continue;
-					}
-				}
+			C4JContractReferenceAnnotation contractRefAnnotation = new C4JContractReferenceAnnotation(clazz);
+			if (contractRefAnnotation.exists()) {
+				mapTargetWithInternalContract(clazz, contractRefAnnotation);
+				continue;
+			}
+
+			C4JContractAnnotation contractAnnotation = new C4JContractAnnotation(clazz);
+			if(contractAnnotation.exists()){
+				mapTargetWithExternalContract(clazz, contractAnnotation);
 			}
 		}
 	}
 
-	private boolean isObject(ClassDoc clazz) {
-		return Object.class.getName().equals(clazz.superclass().qualifiedTypeName());
+	private void mapTargetWithInternalContract(ClassDoc clazz,
+			C4JContractReferenceAnnotation contractRefAnnotation) {
+		ClassDoc contract = root.classNamed(contractRefAnnotation.getContractClassName());
+		addContractFor(clazz, contract);
 	}
 
-	private boolean isContractAnnotation(AnnotationDesc annotation) {
-		return annotation.annotationType().toString().equals(ANNOTATION_CONTRACT);
-	}
-
-	private boolean isContractReferenceAnnotation(AnnotationDesc annotation) {
-		return annotation.annotationType().toString().equals(ANNOTATION_CONTRACT_REFERENCE);
-	}
-
-	private String getAnnotationValue(AnnotationDesc annotation) {
-		if (hasValue(annotation)) {
-			String annotationValue = annotation.elementValues()[0].toString();
-			annotationValue = annotationValue.substring(annotationValue.indexOf(VALUE_DELIMITER) + 1,
-					annotationValue.indexOf(FILE_EXTENSION));
-			return annotationValue.trim();
+	private void mapTargetWithExternalContract(ClassDoc clazz, C4JContractAnnotation contractAnnotation) {
+		if (contractAnnotation.hasValue()) {
+			ClassDoc target = root.classNamed(contractAnnotation.getTargetClassName());
+			addContractFor(target, clazz);
 		}
-		return "";
+		
+		if (clazz.superclass() != null && !ContractChecker.isContract(clazz.superclass())
+				&& !isObject(clazz.superclass())) {
+			ClassDoc superclass = clazz.superclass();
+			addContractFor(superclass, clazz);
+		}
+
+		if (clazz.interfaces().length > 0) {
+			for (ClassDoc superinterface : clazz.interfaces()) {
+				addContractFor(superinterface, clazz);
+			}
+		}
 	}
 
-	private boolean hasValue(AnnotationDesc annotation) {
-		return annotation.elementValues().length > 0;
+	public void addContractFor(ClassDoc target, ClassDoc contract) {
+		if (contract == null || target == null)
+			return;
+
+		List<ClassDoc> listOfContracts = new ArrayList<ClassDoc>();
+		listOfContracts.add(contract);
+		addContractsFor(target, listOfContracts);
+	}
+
+	public void addContractsFor(ClassDoc target, List<ClassDoc> contracts) {
+		if (contracts == null || target == null)
+			return;
+
+		if (map.containsKey(target))
+			map.get(target).addAll(contracts);
+		else
+			map.put(target, contracts);
+	}
+
+	private boolean isObject(ClassDoc clazz) {
+		if (clazz == null)
+			return false;
+
+		return Object.class.getName().equals(clazz.qualifiedTypeName());
 	}
 }

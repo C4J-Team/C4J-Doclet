@@ -76,6 +76,7 @@ public class CustomHtmlDoclet extends HtmlDoclet {
 		ClassTree classtree = new ClassTree(configuration, configuration.nodeprecated);
 		
 		targetContractMap = new TargetContractMap(root);
+		targetContractMap.generateMapping();
 
 		generateClassFiles(root, classtree);
 		if (configuration.sourcepath != null && configuration.sourcepath.length() > 0) {

@@ -12,7 +12,7 @@ import de.vksi.c4j.doclet.util.C4JConditions;
 
 /**
  * @author fmeyerer
- *
+ * 
  */
 public class InvariantVisitor extends VoidVisitorAdapter<Object> {
 
@@ -26,10 +26,10 @@ public class InvariantVisitor extends VoidVisitorAdapter<Object> {
 	public void visit(CompilationUnit cu) {
 		visit(cu, null);
 	}
-	
+
 	@Override
 	public void visit(MethodDeclaration method, Object obj) {
-		
+
 		if (isInvariant(method)) {
 			AssertStatementVisitor assertionVisitor = new AssertStatementVisitor();
 			assertionVisitor.visit(method);
@@ -38,15 +38,17 @@ public class InvariantVisitor extends VoidVisitorAdapter<Object> {
 	}
 
 	private boolean isInvariant(MethodDeclaration method) {
-		List<AnnotationExpr> annotations = method.getAnnotations();
+		if (method != null) {
+			List<AnnotationExpr> annotations = method.getAnnotations();
+			if (annotations != null) {
+				String classInvariantAnnotaion = getSimpleName(ANNOTATION_CLASS_INVARIANT);
 
-		String classInvariantAnnotaion = getSimpleName(ANNOTATION_CLASS_INVARIANT);
-
-		for (AnnotationExpr annotation : annotations) {
-			if (classInvariantAnnotaion.equals(annotation.getName().toString()))
-				return true;
+				for (AnnotationExpr annotation : annotations) {
+					if (annotation != null && classInvariantAnnotaion.equals(annotation.getName().toString()))
+						return true;
+				}
+			}
 		}
-
 		return false;
 	}
 

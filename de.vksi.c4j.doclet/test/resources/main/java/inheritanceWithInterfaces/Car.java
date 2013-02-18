@@ -1,5 +1,6 @@
-package inheritance;
+package inheritanceWithInterfaces;
 
+import inheritanceWithInterfaces.CarContract;
 import de.vksi.c4j.ContractReference;
 
 

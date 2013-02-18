@@ -6,7 +6,7 @@ import de.vksi.c4j.Contract;
 import de.vksi.c4j.Target;
 import externalContract.TimeOfDay;
 
-@Contract
+@Contract(forTarget=TimeOfDay.class)
 public class TimeOfDayContract extends TimeOfDay {
 
    @Target

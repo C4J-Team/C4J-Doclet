@@ -2,7 +2,6 @@ package de.vksi.c4j.doclet.analyzer;
 
 import japa.parser.ast.body.MethodDeclaration;
 import japa.parser.ast.stmt.AssertStmt;
-import japa.parser.ast.stmt.IfStmt;
 import japa.parser.ast.visitor.VoidVisitorAdapter;
 
 import java.util.ArrayList;
@@ -23,11 +22,6 @@ public class AssertStatementVisitor extends VoidVisitorAdapter<List<String>> {
 		conditions = new ArrayList<String>();
 	}
 	
-	//TODO: check if thes method can be removed
-	public void visit(IfStmt statement) {
-		visit(statement, null);
-	}
-
 	public void visit(MethodDeclaration method) {
 		visit(method, null);
 	}

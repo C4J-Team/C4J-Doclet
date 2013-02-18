@@ -1,10 +1,11 @@
-package inheritance;
+package inheritanceWithClasses;
 
 import de.vksi.c4j.ContractReference;
 
-@ContractReference(BoatContract.class)
-public interface Boat {
-	
+
+@ContractReference(CarContract.class)
+public interface Car {
+
 	public void setDestination(String destination);
 
 	public String getDestination();

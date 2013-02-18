@@ -1,4 +1,4 @@
-package inheritance;
+package inheritanceWithInterfaces;
 
 public class BoatImpl implements Boat {
 

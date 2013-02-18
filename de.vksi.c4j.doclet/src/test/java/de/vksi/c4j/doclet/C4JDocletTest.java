@@ -6,7 +6,6 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.sun.javadoc.RootDoc;
-import com.sun.tools.javac.util.Paths;
 
 import de.vksi.c4j.doclet.util.RootDocFactory;
 
@@ -17,23 +16,25 @@ public class C4JDocletTest {
 	private static final String PACKAGE2 = "internalContract";
 	private static final String PACKAGE3 = "package4contracts";
 	private static final String PACKAGE4 = "package4classes";
-	private static final String PACKAGE5 = "inheritance";
+	private static final String PACKAGE5 = "inheritanceWithClasses";
+	private static final String PACKAGE6 = "inheritanceWithInterfaces";
 	//make sure that the test resources can be found cross platform
 	private static final String PATH_TO_TARGETS = "test" + File.separator + "resources" + File.separator
 			+ "main" + File.separator + "java"; 
 	private static final String PATH_TO_CONTRACTS = "test" + File.separator + "resources" + File.separator
 			+ "contract" + File.separator + "java";
-	private static final String OUTPUT_DESTINATION = "test" + File.separator + "output";
+//	private static final String OUTPUT_DESTINATION = "test" + File.separator + "output";
+	private static final String OUTPUT_DESTINATION = "C:" + File.separator + "Temp";
 	
 	private File[] sourcePath;
-	private RootDoc doc;
+	private RootDoc rootDoc;
 	
 	@Before
 	public void setUp() {
 		this.sourcePath = new File[] { new File(PATH_TO_TARGETS), new File(PATH_TO_CONTRACTS) };
-//		EasyDoclet doclet = new EasyDoclet(OUTPUT_DESTINATION, this.sourcePath, PACKAGE1, PACKAGE2, PACKAGE3, PACKAGE4, PACKAGE5);
-		RootDocFactory doclet = new RootDocFactory(OUTPUT_DESTINATION, this.sourcePath, PACKAGE1);
-		doc = doclet.getRootDoc();
+		RootDocFactory rootDocFactory = new RootDocFactory(OUTPUT_DESTINATION, this.sourcePath, PACKAGE1, PACKAGE2, PACKAGE3, PACKAGE4, PACKAGE5, PACKAGE6);
+//		RootDocFactory rootDocFactory = new RootDocFactory(OUTPUT_DESTINATION, this.sourcePath, PACKAGE5);
+		rootDoc = rootDocFactory.getRootDoc();
 		
 		System.out.println();
 	}
@@ -41,7 +42,7 @@ public class C4JDocletTest {
 	@Test
 	public void testStart() {
 		System.out.println();
-		C4JDoclet.start(this.doc);
+		C4JDoclet.start(this.rootDoc);
 		System.out.println();
 	}
 }

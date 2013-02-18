@@ -58,30 +58,32 @@ public class ConditionExtractor {
 
 	private void searchTypeForContractConditions(ProgramElementDoc element, ClassDoc classDoc) {
 		if (targetContractMap.containsTarget(classDoc)) {
-			File contractSourceFile = getContractSourceFile(classDoc);
-			C4JConditions conditionsToMerge = parseContract(element, contractSourceFile);
+			List<ClassDoc> contracts = targetContractMap.getContractFor(classDoc);
+			for (ClassDoc contract : contracts) {
+				File contractSourceFile = getContractSourceFile(contract);
+				C4JConditions conditionsToMerge = parseContract(element, contractSourceFile);
 
-			if (preConditionsAlreadyDefined(classDoc, conditionsToMerge)) {
-					addWarningToPreconditions(targetContractMap.getContractFor(classDoc));
+				if (preConditionsAlreadyDefined(classDoc, conditionsToMerge)) {
+					addWarningToPreconditions(contract);
 					conditionsToMerge.setPreConditions(new ArrayList<String>());
-			}
+				}
 
-			conditions.mergeWith(conditionsToMerge);
+				conditions.mergeWith(conditionsToMerge);
+			}
 		}
 	}
 
 	private boolean preConditionsAlreadyDefined(ClassDoc classDoc, C4JConditions conditionsToMerge) {
-		return hasSupertype(classDoc) 
-				&& conditions.hasPreConditions()
+		return hasSupertype(classDoc) && conditions.hasPreConditions()
+				&& !isObject(classDoc.superclass())
 				&& !conditionsToMerge.getConditions(C4JConditions.PRE_CONDITIONS).isEmpty();
 	}
 
-	private File getContractSourceFile(ClassDoc classDoc) {
-		ClassDoc contract = targetContractMap.getContractFor(classDoc);
+	private File getContractSourceFile(ClassDoc contract) {
 		File contractSourceFile = getSourceFileOf(contract);
 		return contractSourceFile;
 	}
-	
+
 	private File getSourceFileOf(ClassDoc contract) {
 		if (contract != null) {
 			String sourcepath = configuration.sourcepath;
@@ -99,7 +101,7 @@ public class ConditionExtractor {
 		}
 		return null;
 	}
-	
+
 	private C4JConditions parseContract(ProgramElementDoc element, File contractSourceFile) {
 		if (contractSourceFile != null) {
 			try {
@@ -139,10 +141,17 @@ public class ConditionExtractor {
 		C4JConditions conditionsToMerge = mVisitor.getConditions();
 		return conditionsToMerge;
 	}
-	
 
 	private boolean hasSupertype(ClassDoc classDoc) {
 		return classDoc.superclassType() != null || classDoc.interfaces().length > 0;
+	}
+	
+	//TODO: refactoring -> duplicate code: create util class to provide these method
+	private boolean isObject(ClassDoc clazz) {
+		if(clazz == null)
+			return false;
+		
+		return Object.class.getName().equals(clazz.qualifiedTypeName());
 	}
 
 	public List<String> getPreConditions() {

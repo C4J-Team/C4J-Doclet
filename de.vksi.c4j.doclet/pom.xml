@@ -5,7 +5,7 @@
 
 	<groupId>de.vksi.c4j</groupId>
 	<artifactId>c4j.doclet</artifactId>
-	<version>0.9.Beta</version>
+	<version>0.9.1.Beta</version>
 	<packaging>jar</packaging>
 
 	<name>de.vksi.c4j.doclet</name>

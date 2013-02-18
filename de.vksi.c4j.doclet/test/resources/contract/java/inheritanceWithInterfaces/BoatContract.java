@@ -1,8 +1,10 @@
-package inheritance;
+package inheritanceWithInterfaces;
 
 import static de.vksi.c4j.Condition.ignored;
 import static de.vksi.c4j.Condition.postCondition;
 import static de.vksi.c4j.Condition.preCondition;
+
+import inheritanceWithInterfaces.Boat;
 
 import java.util.Arrays;
 import java.util.HashSet;
@@ -11,12 +13,12 @@ import java.util.Set;
 import de.vksi.c4j.ClassInvariant;
 import de.vksi.c4j.Target;
 
-public class CarContract implements Car {
+public class BoatContract implements Boat {
 
-	private Set<String> m_roadsExistsBetween = new HashSet<String>(Arrays.asList(new String[] {"Los Angeles", "Denver", "Atlanta", "Boston", "New York"}));
+	private Set<String> m_portExistsAt = new HashSet<String>(Arrays.asList(new String[] {"Los Angeles", "Boston", "New York"}));
 	
 	@Target
-	private Car target;
+	private Boat target;
 
 	@ClassInvariant
 	public void classInvariant() {
@@ -25,9 +27,10 @@ public class CarContract implements Car {
 	@Override
 	public void setDestination(String destination) {
 		if (preCondition()) {
-			assert m_roadsExistsBetween.contains(destination) : "destination reachable by car";
+			assert m_portExistsAt.contains(destination) : "destination not reachable by boat";
 		}
 		if (postCondition()) {
+			System.out.println(target.getDestination());
 			assert target.getDestination().equals(destination) : "destination set";
 		}
 	}
