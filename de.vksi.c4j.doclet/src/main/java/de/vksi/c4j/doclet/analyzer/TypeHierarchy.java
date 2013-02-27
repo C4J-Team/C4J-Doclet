@@ -12,7 +12,11 @@ import com.sun.javadoc.ClassDoc;
  */
 public class TypeHierarchy {
 
-	public TypeHierarchy(){
+	public static boolean isObject(ClassDoc clazz) {
+		if (clazz == null)
+			return false;
+
+		return Object.class.getName().equals(clazz.qualifiedTypeName());
 	}
 	
 	public List<ClassDoc> getAllSupertypesOf(ClassDoc type) {
@@ -80,5 +84,4 @@ public class TypeHierarchy {
 		}
 		return supers;
 	}
-
 }

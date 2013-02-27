@@ -8,6 +8,8 @@ import java.util.Map;
 import com.sun.javadoc.ClassDoc;
 import com.sun.javadoc.RootDoc;
 
+import de.vksi.c4j.doclet.analyzer.TypeHierarchy;
+
 /**
  * @author fmeyerer
  * 
@@ -71,7 +73,7 @@ public class TargetContractMap {
 		}
 		
 		if (clazz.superclass() != null && !ContractChecker.isContract(clazz.superclass())
-				&& !isObject(clazz.superclass())) {
+				&& !TypeHierarchy.isObject(clazz.superclass())) {
 			ClassDoc superclass = clazz.superclass();
 			addContractFor(superclass, clazz);
 		}
@@ -100,12 +102,5 @@ public class TargetContractMap {
 			map.get(target).addAll(contracts);
 		else
 			map.put(target, contracts);
-	}
-
-	private boolean isObject(ClassDoc clazz) {
-		if (clazz == null)
-			return false;
-
-		return Object.class.getName().equals(clazz.qualifiedTypeName());
 	}
 }

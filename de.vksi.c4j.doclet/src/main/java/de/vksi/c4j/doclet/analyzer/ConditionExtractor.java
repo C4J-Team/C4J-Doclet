@@ -75,7 +75,7 @@ public class ConditionExtractor {
 
 	private boolean preConditionsAlreadyDefined(ClassDoc classDoc, C4JConditions conditionsToMerge) {
 		return hasSupertype(classDoc) && conditions.hasPreConditions()
-				&& !isObject(classDoc.superclass())
+				&& !TypeHierarchy.isObject(classDoc.superclass())
 				&& !conditionsToMerge.getConditions(C4JConditions.PRE_CONDITIONS).isEmpty();
 	}
 
@@ -144,14 +144,6 @@ public class ConditionExtractor {
 
 	private boolean hasSupertype(ClassDoc classDoc) {
 		return classDoc.superclassType() != null || classDoc.interfaces().length > 0;
-	}
-	
-	//TODO: refactoring -> duplicate code: create util class to provide these method
-	private boolean isObject(ClassDoc clazz) {
-		if(clazz == null)
-			return false;
-		
-		return Object.class.getName().equals(clazz.qualifiedTypeName());
 	}
 
 	public List<String> getPreConditions() {
