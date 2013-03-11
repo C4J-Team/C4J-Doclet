@@ -1,8 +1,0 @@
-Das C4J Doclet…
-1)…ist Ausgelegt für Java 6.
-2)…ist nicht an Eclipse gebunden, sondern kann entsprechend mit dem JavaDoc-Compiler  über die Kommandozeile gestartet werden.
-3)…unterstützt die Dokumentation interner- und externer Contracts. Dabei werden die Contracts nicht in der JavaDoc-Dokumentation aufgeführt, sind jedoch mit den Targets verlinkt und können bei Bedarf geladen werden.
-	a. Die "one-to-many" Beziehung zwischen Target- und Contract-Klassen wird auch dann berücksichtigt, wenn die Target-Klasse explizit genau einen internen Contract (@ContractReference) ausweist, jedoch neben diesem explizit genannten noch weitere externe Contracts besitzt.
-4)…berücksichtigt Vererbungshierarchien von Contracts
-	a. Für Contracts, welche sich in der gleichen Ebene der Vererbungshierarchie befinden und das gleiche Target schützen, werden die PreConditions UND-verknüpft.
-	b. Werden bereits definierte PreConditions eines Targets durch Contracts niedriger Vererbungshierarchie verändert, erscheint eine Warnung in der JavaDoc-Dokumentation, welche auf das vorliegende Problem hinweist.
