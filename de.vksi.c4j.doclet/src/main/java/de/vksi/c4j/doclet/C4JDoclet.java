@@ -11,7 +11,7 @@ import com.sun.tools.doclets.standard.Standard;
  *
  */
 public class C4JDoclet extends Standard {
-
+	
     public static int optionLength(String option) {
     	return CustomHtmlDoclet.optionLength(option);
     }

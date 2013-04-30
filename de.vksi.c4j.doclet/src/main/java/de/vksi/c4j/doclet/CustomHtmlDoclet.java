@@ -63,8 +63,6 @@ public class CustomHtmlDoclet extends HtmlDoclet {
 
 	private void startGeneration(RootDoc root) throws Exception {
 		if (root.classes().length == 0) {
-			
-			
 			configuration.message.error("doclet.No_Public_Classes_To_Document");
 			return;
 		}
