@@ -23,8 +23,8 @@ public class C4JDocletTest {
 			+ "main" + File.separator + "java"; 
 	private static final String PATH_TO_CONTRACTS = "test" + File.separator + "resources" + File.separator
 			+ "contract" + File.separator + "java";
-//	private static final String OUTPUT_DESTINATION = "test" + File.separator + "output";
-	private static final String OUTPUT_DESTINATION = "C:" + File.separator + "Temp";
+	private static final String OUTPUT_DESTINATION = "test" + File.separator + "output";
+//	private static final String OUTPUT_DESTINATION = "C:" + File.separator + "Temp";
 	
 	private File[] sourcePath;
 	private RootDoc rootDoc;
@@ -32,17 +32,11 @@ public class C4JDocletTest {
 	@Before
 	public void setUp() {
 		this.sourcePath = new File[] { new File(PATH_TO_TARGETS), new File(PATH_TO_CONTRACTS) };
-		RootDocFactory rootDocFactory = new RootDocFactory(OUTPUT_DESTINATION, this.sourcePath, PACKAGE1, PACKAGE2, PACKAGE3, PACKAGE4, PACKAGE5, PACKAGE6);
-//		RootDocFactory rootDocFactory = new RootDocFactory(OUTPUT_DESTINATION, this.sourcePath, PACKAGE5);
-		rootDoc = rootDocFactory.getRootDoc();
-		
-		System.out.println();
+		rootDoc = RootDocFactory.createRootDoc(OUTPUT_DESTINATION, this.sourcePath, PACKAGE1, PACKAGE2, PACKAGE3, PACKAGE4, PACKAGE5, PACKAGE6);
 	}
 
 	@Test
 	public void testStart() {
-		System.out.println();
 		C4JDoclet.start(this.rootDoc);
-		System.out.println();
 	}
 }

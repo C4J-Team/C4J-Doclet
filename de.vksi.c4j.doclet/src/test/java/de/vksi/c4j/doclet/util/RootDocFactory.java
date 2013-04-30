@@ -18,145 +18,129 @@ import com.sun.tools.javadoc.ModifierFilter;
 
 public class RootDocFactory {
 
-	private static final String SOURCEPATH_OPT = "-sourcepath";
+    private static final String SOURCEPATH_OPT = "-sourcepath";
 
-	private static final String DESTINATION_PATH = "-d";
+    private static final String DESTINATION_PATH = "-d";
 
-	final private Logger log = Logger.getLogger(RootDocFactory.class.getName());
+    final private Logger log = Logger.getLogger(RootDocFactory.class.getName());
 
-	final private File[] sourceDirectory;
-	final private String[] packageNames;
-	final private File[] fileNames;
-	final private RootDoc rootDoc;
+    final private File[] sourceDirectory;
+    final private RootDoc rootDoc;
 
-	public RootDocFactory(String destination, File sourceDirectory, String... packageNames) {
-		this(destination, new File[] { sourceDirectory }, packageNames, new File[0]);
-	}
+    protected RootDocFactory(String destination, File[] sourceDirectory, String[] packageNames, File[] fileNames) {
+        this.sourceDirectory = sourceDirectory;
 
-	public RootDocFactory(String destination, File[] sourceDirectory, String... packageNames) {
-		this(destination, sourceDirectory, packageNames, new File[0]);
-	}
+        Context context = new Context();
+        Options compOpts = Options.instance(context);
+        compOpts.put(SOURCEPATH_OPT, concatenateSourcePath());
+        compOpts.put(DESTINATION_PATH, destination);
 
-	public RootDocFactory(String destination, File[] sourceDirectory, File... fileNames) {
-		this(destination, sourceDirectory, new String[0], fileNames);
-	}
+        new PublicMessager(context, getApplicationName(), new PrintWriter(new LogWriter(Level.SEVERE), true),
+                new PrintWriter(new LogWriter(Level.WARNING), true), new PrintWriter(
+                        new LogWriter(Level.FINE), true));
 
-	protected RootDocFactory(String destination, File[] sourceDirectory, String[] packageNames, File[] fileNames) {
-		this.sourceDirectory = sourceDirectory;
-		this.packageNames = packageNames;
-		this.fileNames = fileNames;
+        ListBuffer<String> javaFiles = addingFilesToDocumentationPath(fileNames);
+        ListBuffer<String[]> options = optionsToList(compOpts);
+        ListBuffer<String> subPackages = addingPackagesToDocumentationPath(packageNames);
 
-		Context context = new Context();
-		Options compOpts = Options.instance(context);
-		compOpts.put(SOURCEPATH_OPT, concatenateSourcePath());
-		compOpts.put(DESTINATION_PATH, destination);
+        JavadocTool javadocTool = JavadocTool.make0(context);
 
-		new PublicMessager(context, getApplicationName(), new PrintWriter(new LogWriter(Level.SEVERE), true),
-				new PrintWriter(new LogWriter(Level.WARNING), true), new PrintWriter(
-						new LogWriter(Level.FINE), true));
+        try {
+            rootDoc = javadocTool.getRootDocImpl("", null, new ModifierFilter(ModifierFilter.ALL_ACCESS),
+                    javaFiles.toList(), options.toList(), false, subPackages.toList(),
+                    new ListBuffer<String>().toList(), false, false, false);
+        } catch (Exception ex) {
+            throw new RuntimeException(ex);
+        }
 
-		ListBuffer<String> javaFiles = addingFilesToDocumentationPath(fileNames);
-		ListBuffer<String[]> options = optionsToList(compOpts);
-		ListBuffer<String> subPackages = addingPackagesToDocumentationPath(packageNames);
+        if (log.isLoggable(Level.FINEST)) {
+            for (ClassDoc classDoc : getRootDoc().classes()) {
+                log.finest("Parsed Javadoc class source: " + classDoc.position() + " with inline tags: "
+                        + classDoc.inlineTags().length);
+            }
+        }
+    }
 
-		JavadocTool javadocTool = JavadocTool.make0(context);
+    private ListBuffer<String> addingPackagesToDocumentationPath(String[] packageNames) {
+        ListBuffer<String> subPackages = new ListBuffer<String>();
+        for (String packageName : packageNames) {
+            log.fine("Adding sub-packages to documentation path: " + packageName);
+            subPackages.append(packageName);
+        }
+        return subPackages;
+    }
 
-		try {
-			rootDoc = javadocTool.getRootDocImpl("", null, new ModifierFilter(ModifierFilter.ALL_ACCESS),
-					javaFiles.toList(), options.toList(), false, subPackages.toList(),
-					new ListBuffer<String>().toList(), false, false, false);
-		} catch (Exception ex) {
-			throw new RuntimeException(ex);
-		}
+    private ListBuffer<String> addingFilesToDocumentationPath(File[] fileNames) {
+        ListBuffer<String> javaNames = new ListBuffer<String>();
+        for (File fileName : fileNames) {
+            log.fine("Adding file to documentation path: " + fileName.getAbsolutePath());
+            javaNames.append(fileName.getPath());
+        }
+        return javaNames;
+    }
 
-		if (log.isLoggable(Level.FINEST)) {
-			for (ClassDoc classDoc : getRootDoc().classes()) {
-				log.finest("Parsed Javadoc class source: " + classDoc.position() + " with inline tags: "
-						+ classDoc.inlineTags().length);
-			}
-		}
-	}
+    private ListBuffer<String[]> optionsToList(Options compOpts) {
+        String[] opt1 = { SOURCEPATH_OPT, compOpts.get(SOURCEPATH_OPT) };
+        String[] opt2 = {DESTINATION_PATH, compOpts.get(DESTINATION_PATH) };
+        ListBuffer<String[]> options = new ListBuffer<String[]>();
+        options.append(opt1);
+        options.append(opt2);
+        return options;
+    }
 
-	private ListBuffer<String> addingPackagesToDocumentationPath(String[] packageNames) {
-		ListBuffer<String> subPackages = new ListBuffer<String>();
-		for (String packageName : packageNames) {
-			log.fine("Adding sub-packages to documentation path: " + packageName);
-			subPackages.append(packageName);
-		}
-		return subPackages;
-	}
+    private String concatenateSourcePath() {
+        String concatenatePath = "";
+        for (File file : getSourceDirectory()) {
+            if (file.exists()) {
+                log.fine("Using source path: " + file.getAbsolutePath());
+                concatenatePath += file.getAbsolutePath() + ";";
+            } else {
+                log.info("Ignoring non-existant source path, check your source directory argument");
+            }
+        }
 
-	private ListBuffer<String> addingFilesToDocumentationPath(File[] fileNames) {
-		ListBuffer<String> javaNames = new ListBuffer<String>();
-		for (File fileName : fileNames) {
-			log.fine("Adding file to documentation path: " + fileName.getAbsolutePath());
-			javaNames.append(fileName.getPath());
-		}
-		return javaNames;
-	}
+        return concatenatePath.substring(0, concatenatePath.length() - 1);
+    }
 
-	private ListBuffer<String[]> optionsToList(Options compOpts) {
-		String[] opt1 = { SOURCEPATH_OPT, compOpts.get(SOURCEPATH_OPT) };
-		String[] opt2 = {DESTINATION_PATH, compOpts.get(DESTINATION_PATH) };
-		ListBuffer<String[]> options = new ListBuffer<String[]>();
-		options.append(opt1);
-		options.append(opt2);
-		return options;
-	}
+    private File[] getSourceDirectory() {
+        return sourceDirectory;
+    }
 
-	private String concatenateSourcePath() {
-		String concatenatePath = "";
-		for (File file : getSourceDirectory()) {
-			if (file.exists()) {
-				log.fine("Using source path: " + file.getAbsolutePath());
-				concatenatePath += file.getAbsolutePath() + ";";
-			} else {
-				log.info("Ignoring non-existant source path, check your source directory argument");
-			}
-		}
+    private RootDoc getRootDoc() {
+        return rootDoc;
+    }
 
-		return concatenatePath.substring(0, concatenatePath.length() - 1);
-	}
+    public static RootDoc createRootDoc(String destination, File[] sourceDirectory, String... packageNames){
+        return createRootDoc(destination, sourceDirectory, packageNames, new File[0]);
+    }
 
-	public File[] getSourceDirectory() {
-		return sourceDirectory;
-	}
+    public static RootDoc createRootDoc(String destination, File[] sourceDirectory, String[] packageNames, File[] fileNames){
+        return new RootDocFactory(destination, sourceDirectory, packageNames, fileNames).getRootDoc();
+    }
 
-	public String[] getPackageNames() {
-		return packageNames;
-	}
+    protected class LogWriter extends Writer {
 
-	public File[] getFileNames() {
-		return fileNames;
-	}
+        Level level;
 
-	public RootDoc getRootDoc() {
-		return rootDoc;
-	}
+        public LogWriter(Level level) {
+            this.level = level;
+        }
 
-	protected class LogWriter extends Writer {
+        public void write(char[] chars, int offset, int length) throws IOException {
+            String s = new String(Arrays.copyOf(chars, length));
+            if (!s.equals("\n"))
+                log.log(level, s);
+        }
 
-		Level level;
+        public void flush() throws IOException {
+        }
 
-		public LogWriter(Level level) {
-			this.level = level;
-		}
+        public void close() throws IOException {
+        }
+    }
 
-		public void write(char[] chars, int offset, int length) throws IOException {
-			String s = new String(Arrays.copyOf(chars, length));
-			if (!s.equals("\n"))
-				log.log(level, s);
-		}
+    protected String getApplicationName() {
+        return getClass().getSimpleName() + " Application";
+    }
 
-		public void flush() throws IOException {
-		}
-
-		public void close() throws IOException {
-		}
-	}
-
-	protected String getApplicationName() {
-		return getClass().getSimpleName() + " Application";
-	}
-
-}
+} 
