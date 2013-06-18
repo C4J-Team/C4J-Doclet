@@ -19,4 +19,4 @@ C4J-Doclet
 
 For more detailed information about the Javadoc-Tool and the use of doclets, please refere to:
 * http://www.oracle.com/technetwork/java/javase/documentation/index-jsp-135444.html
-[![githalytics.com alpha](https://cruel-carlota.pagodabox.com/a0e6c1f393dd8802d4da46835189ff46 "githalytics.com")](http://githalytics.com/C4J-Team/C4J-Doclet)
+[![githalytics.com alpha](https://cruel-carlota.gopagoda.com/a0e6c1f393dd8802d4da46835189ff46 "githalytics.com")](http://githalytics.com/C4J-Team/C4J-Doclet)
